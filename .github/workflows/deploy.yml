@@ -1,13 +1,13 @@
-name: Connect to EC2 and Deploy Repository
+name: Deploy React App to Nginx on EC2
 
 on:
   push:
     branches:
-      - master  # Change if needed
+      - master  # Triggers workflow when changes are pushed to master branch
 
 jobs:
   deploy:
-    name: Connect and Deploy
+    name: Deploy React App
     runs-on: ubuntu-latest
 
     steps:
@@ -24,14 +24,21 @@ jobs:
       - name: Verify EC2 Connection
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            echo "✅ Connected to EC2: $(hostname -I)"
-            echo "Hello World"
-            echo "OS Details: $(lsb_release -a)"
-            echo "Current User: $(whoami)"
-            echo "Home Directory: $HOME"
+            echo "✅ Successfully Connected to EC2"
+            hostname -I
+            whoami
             df -h
           EOF
 
-      - name: Copy Repository Files to EC2
+      - name: Copy React App Files to EC2
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/myapp/
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/myapp/
+
+      - name: Install Dependencies & Build React App on EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /var/www/html/myapp
+            npm install
+            npm run build
+            sudo systemctl restart nginx  # Restart Nginx to serve new build
+          EOF
