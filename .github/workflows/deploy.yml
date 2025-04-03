@@ -25,10 +25,10 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             echo "✅ Connected to EC2: $(hostname -I)"
+            echo "Hello World"
             echo "OS Details: $(lsb_release -a)"
             echo "Current User: $(whoami)"
             echo "Home Directory: $HOME"
-            echo "Available Disk Space:"
             df -h
           EOF
 
