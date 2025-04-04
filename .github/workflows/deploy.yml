@@ -24,10 +24,8 @@ jobs:
       - name: Verify EC2 Connection
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            echo "✅ Successfully Connected to EC2"
             hostname -I
             whoami
-            df -h
           EOF
 
       - name: Copy React App Files to EC2
