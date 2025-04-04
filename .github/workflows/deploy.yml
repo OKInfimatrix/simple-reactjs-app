@@ -36,6 +36,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /var/www/html/myapp
+            sudo mkdir onkar.sh
             npm install
             npm run build
             sudo systemctl restart nginx  # Restart Nginx to serve new build
