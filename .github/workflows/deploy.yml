@@ -22,7 +22,9 @@ jobs:
 
         run: |
   
-          echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
+          echo "$SSH_PRIVATE_KEY" > private_key && 
+          chmod 600 private_key && 
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
           rsync -avz --delete -e "ssh -i private_key -o StrictHostKeyChecking=no" && 
           sudo mkdir -p /var/www/html/myapp && 
