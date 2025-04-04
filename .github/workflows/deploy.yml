@@ -1,44 +1,42 @@
-name: Deploy React App to Nginx on EC2
+name: Deploy React App to EC2 and Serve with Nginx
 
 on:
   push:
     branches:
-      - master  # Triggers workflow when changes are pushed to master branch
+      - master  # Trigger when code is pushed to master
 
 jobs:
   deploy:
-    name: Deploy React App
+    name: Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Connect to EC2 and Deploy
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.SSH_HOST }}
+          USER_NAME: ${{ secrets.SSH_USER }}
 
-      - name: Verify EC2 Connection
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            echo "✅ Successfully Connected to EC2"
-            hostname -I
-            whoami
-            df -h
-          EOF
+          # Save the private key
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
 
-      - name: Copy React App Files to EC2
-        run: |
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/myapp/
+          # Copy code to EC2
+          rsync -avz --delete -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ${USER_NAME}@${HOSTNAME}:/var/www/html/myapp/
 
-      - name: Install Dependencies & Build React App on EC2
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          # SSH into EC2 and install/build the React app
+          ssh -i private_key -o StrictHostKeyChecking=no ${USER_NAME}@${HOSTNAME} << 'EOF'
             cd /var/www/html/myapp
             npm install
             npm run build
-            sudo systemctl restart nginx  # Restart Nginx to serve new build
+
+            # Replace default nginx root with our React build
+            sudo rm -rf /var/www/html/*
+            sudo cp -r build/* /var/www/html/
+
+            # Restart nginx
+            sudo systemctl restart nginx
           EOF
