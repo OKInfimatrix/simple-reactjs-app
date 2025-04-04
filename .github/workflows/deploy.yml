@@ -24,7 +24,11 @@ jobs:
   
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
 
-          rsync -avz --delete -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ${USER_NAME}@${HOSTNAME}:/var/www/html/myapp/
+          rsync -avz --delete -e "ssh -i private_key -o StrictHostKeyChecking=no" && 
+          sudo mkdir -p /var/www/html/myapp && 
+          sudo chown -R ${USER_NAME}:${USER_NAME} /var/www/html/myapp &&
+          sudo chmod 755 /var/www/html/myapp && 
+          ./ ${USER_NAME}@${HOSTNAME}:/var/www/html/myapp/
           
           ssh -i private_key -o StrictHostKeyChecking=no ${USER_NAME}@${HOSTNAME} << 'EOF'
             cd /var/www/html/myapp
