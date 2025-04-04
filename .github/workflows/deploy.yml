@@ -3,7 +3,7 @@ name: Deploy React App to EC2 and Serve with Nginx
 on:
   push:
     branches:
-      - master  # Trigger when code is pushed to master
+      - master
 
 jobs:
   deploy:
@@ -21,22 +21,16 @@ jobs:
           USER_NAME: ${{ secrets.SSH_USER }}
 
         run: |
-          # Save the private key
+  
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
 
-          # Copy code to EC2
           rsync -avz --delete -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ${USER_NAME}@${HOSTNAME}:/var/www/html/myapp/
-
-          # SSH into EC2 and install/build the React app
+          
           ssh -i private_key -o StrictHostKeyChecking=no ${USER_NAME}@${HOSTNAME} << 'EOF'
             cd /var/www/html/myapp
             npm install
             npm run build
-
-            # Replace default nginx root with our React build
             sudo rm -rf /var/www/html/*
             sudo cp -r build/* /var/www/html/
-
-            # Restart nginx
             sudo systemctl restart nginx
           EOF
