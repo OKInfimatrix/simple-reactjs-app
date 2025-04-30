@@ -1,37 +1,26 @@
-name: Deploy React App to EC2 and Serve with Nginx
+name: Deploy from Tag
 
 on:
-  push:
-    branches:
-      - master  # Trigger when code is pushed to master
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy'
+        required: true
+        type: string
 
 jobs:
   deploy:
-    name: Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    - name: Checkout code at specified tag
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.tag }}
 
-      - name: Connect to EC2 and Deploy
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ secrets.SSH_HOST }}
-          USER_NAME: ${{ secrets.SSH_USER }}
-
-        run: |
-          # Save the private key
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-
-          # Copy code to EC2
-          rsync -avz --delete -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ${USER_NAME}@${HOSTNAME}:/var/www/html/myapp/
-
-          # SSH into EC2 and install/build the React app
-          ssh -i private_key -o StrictHostKeyChecking=no ${USER_NAME}@${HOSTNAME} << 'EOF'
-            cd /var/www/html/myapp
-            sudo mkdir onkar.sh
-            npm install
-            npm run build
-            sudo systemctl restart nginx
-          EOF
+    - name: Deploy Application
+      run: |
+        echo "Deploying code from tag: ${{ github.event.inputs.tag }}"
+        ls -al
+        # Replace below line with your real deployment script
+        # ./deploy.sh or aws deploy, docker build, etc.
