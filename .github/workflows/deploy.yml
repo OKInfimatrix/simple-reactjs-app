@@ -18,9 +18,7 @@ jobs:
       with:
         ref: ${{ github.event.inputs.tag }}
 
-    - name: Deploy Application
+    - name: Show contents of text.txt
       run: |
-        echo "Deploying code from tag: ${{ github.event.inputs.tag }}"
-        ls -al
-        # Replace below line with your real deployment script
-        # ./deploy.sh or aws deploy, docker build, etc.
+        echo "Showing contents of text.txt from tag: ${{ github.event.inputs.tag }}"
+        cat text.txt
