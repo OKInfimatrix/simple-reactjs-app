@@ -1,0 +1,26 @@
+# .github/workflows/create-tag.yml
+name: Create Tag
+
+on:
+  workflow_dispatch:  # Trigger manually from GitHub UI
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Get current date and time
+      id: date
+      run: echo "TAG_NAME=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+    - name: Create and push tag
+      run: |
+        git config --global user.name "OKInfimatrix"
+        git config --global user.email "okadganchi@infimatrix.com"
+        git tag $TAG_NAME
+        git push origin $TAG_NAME
+      env:
+        TAG_NAME: ${{ env.TAG_NAME }}
