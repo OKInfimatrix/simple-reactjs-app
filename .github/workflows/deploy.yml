@@ -38,4 +38,5 @@ jobs:
           script: |
             echo "Deploying client: ${{ inputs.client_id }}"
             ./deploy.sh ${{ inputs.client_id }}
+            cd simple-reactjs-app/
             ls -ltr
