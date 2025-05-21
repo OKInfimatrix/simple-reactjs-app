@@ -39,4 +39,5 @@ jobs:
             echo "Deploying client: ${{ inputs.client_id }}"
             ./deploy.sh ${{ inputs.client_id }}
             cd simple-reactjs-app/
+            git pull origin master
             ls -ltr
